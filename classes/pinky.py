@@ -19,7 +19,7 @@ class Pinky(Ghost):
         elif self.is_frightened and not self.is_dead and not self.is_eaten:
             screen.blit(self.spooked_img, (self.x_pos, self.y_pos))
         else:
-            screen.blit(self.is_dead_img, (self.x_pos, self.y_pos))
+            screen.blit(self.dead_img, (self.x_pos, self.y_pos))
         ghost_rect = pygame.rect.Rect((self.center_x - 18, self.center_y - 18), (36, 36))
         return ghost_rect
     
