@@ -52,12 +52,12 @@ class Utility:
     def check_collisions(self, scor, power, power_count, eaten_ghosts):
         num1 = (HEIGHT - 50) // 32
         num2 = WIDTH // 30
-        if 0 < player_x < 870:
-            if self.level[center_y // num1][center_x // num2] == 1:
-                self.level[center_y // num1][center_x // num2] = 0
+        if 0 < self.player_x < 870:
+            if self.level[self.center_y // num1][self.center_x // num2] == 1:
+                self.level[self.center_y // num1][self.center_x // num2] = 0
                 scor += 10
-            if self.level[center_y // num1][center_x // num2] == 2:
-                self.level[center_y // num1][center_x // num2] = 0
+            if self.level[self.center_y // num1][self.center_x // num2] == 2:
+                self.level[self.center_y // num1][self.center_x // num2] = 0
                 scor += 50
                 power = True
                 power_count = 0
@@ -96,62 +96,3 @@ class Utility:
                     pygame.draw.line(self.screen, 'white', (j * num2, i * num1 + (0.5 * num1)),
                                      (j * num2 + num2, i * num1 + (0.5 * num1)), 3)
                     
-    def draw_player(self):
-        # 0-RIGHT, 1-LEFT, 2-UP, 3-DOWN
-        if direction == 0:
-            self.screen.blit(self.player_images[self.counter // 5], (player_x, player_y))
-        elif direction == 1:
-            self.screen.blit(pygame.transform.flip(self.player_images[self.counter // 5], True, False), (player_x, player_y))
-        elif direction == 2:
-            self.screen.blit(pygame.transform.rotate(self.player_images[self.counter // 5], 90), (player_x, player_y))
-        elif direction == 3:
-            self.screen.blit(pygame.transform.rotate(self.player_images[self.counter // 5], 270), (player_x, player_y))
-
-
-    def check_position(self, centerx, centery):
-        turns = [False, False, False, False]
-        num1 = (HEIGHT - 50) // 32
-        num2 = (WIDTH // 30)
-        num3 = 15
-        # check collisions based on center x and center y of player +/- fudge number
-        if centerx // 30 < 29:
-            if direction == 0:
-                if self.level[centery // num1][(centerx - num3) // num2] < 3:
-                    turns[1] = True
-            if direction == 1:
-                if self.level[centery // num1][(centerx + num3) // num2] < 3:
-                    turns[0] = True
-            if direction == 2:
-                if self.level[(centery + num3) // num1][centerx // num2] < 3:
-                    turns[3] = True
-            if direction == 3:
-                if self.level[(centery - num3) // num1][centerx // num2] < 3:
-                    turns[2] = True
-
-            if direction == 2 or direction == 3:
-                if 12 <= centerx % num2 <= 18:
-                    if self.level[(centery + num3) // num1][centerx // num2] < 3:
-                        turns[3] = True
-                    if self.level[(centery - num3) // num1][centerx // num2] < 3:
-                        turns[2] = True
-                if 12 <= centery % num1 <= 18:
-                    if self.level[centery // num1][(centerx - num2) // num2] < 3:
-                        turns[1] = True
-                    if self.level[centery // num1][(centerx + num2) // num2] < 3:
-                        turns[0] = True
-            if direction == 0 or direction == 1:
-                if 12 <= centerx % num2 <= 18:
-                    if self.level[(centery + num1) // num1][centerx // num2] < 3:
-                        turns[3] = True
-                    if self.level[(centery - num1) // num1][centerx // num2] < 3:
-                        turns[2] = True
-                if 12 <= centery % num1 <= 18:
-                    if self.level[centery // num1][(centerx - num3) // num2] < 3:
-                        turns[1] = True
-                    if self.level[centery // num1][(centerx + num3) // num2] < 3:
-                        turns[0] = True
-        else:
-            turns[0] = True
-            turns[1] = True
-
-        return turns
