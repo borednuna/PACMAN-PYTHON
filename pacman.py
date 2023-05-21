@@ -6,6 +6,8 @@ from classes.blinky import Blinky
 from classes.pinky import Pinky
 from classes.inky import Inky
 from classes.clyde import Clyde
+from classes.utility import Utility
+from classes.player import Player
 
 pygame.init()
 
@@ -18,213 +20,68 @@ font = pygame.font.Font('freesansbold.ttf', 20)
 level = copy.deepcopy(boards)
 color = 'blue'
 PI = math.pi
-player_images = []
-for i in range(1, 5):
-    player_images.append(pygame.transform.scale(pygame.image.load(f'assets/player_images/{i}.png'), (45, 45)))
-player_x = 450
-player_y = 663
-direction = 0
-counter = 0
 flicker = False
 # R, L, U, D
 turns_allowed = [False, False, False, False]
 direction_command = 0
-player_speed = 2
 score = 0
-powerup = False
+counter = 0
 power_counter = 0
 eaten_ghost = [False, False, False, False]
-targets = [(player_x, player_y), (player_x, player_y), (player_x, player_y), (player_x, player_y)]
 moving = False
 startup_counter = 0
-lives = 3
 game_over = False
 game_won = False
 
+# instatiate player
+player = Player()
+targets = [(player.x, player.y), (player.x, player.y), (player.x, player.y), (player.x, player.y)]
+
 # instatiate ghosts
-blinky = Blinky((player_x, player_y), 0)
-inky = Inky((player_x, player_y), 1)
-pinky = Pinky((player_x, player_y), 2)
-clyde = Clyde((player_x, player_y), 3)
+blinky = Blinky((player.x, player.y), 0)
+inky = Inky((player.x, player.y), 1)
+pinky = Pinky((player.x, player.y), 2)
+clyde = Clyde((player.x, player.y), 3)
 
-def draw_misc():
-    score_text = font.render(f'Score: {score}', True, 'white')
-    screen.blit(score_text, (10, 920))
-    if powerup:
-        pygame.draw.circle(screen, 'blue', (140, 930), 15)
-    for i in range(lives):
-        screen.blit(pygame.transform.scale(player_images[0], (30, 30)), (650 + i * 40, 915))
-    if game_over:
-        pygame.draw.rect(screen, 'white', [50, 200, 800, 300],0, 10)
-        pygame.draw.rect(screen, 'dark gray', [70, 220, 760, 260], 0, 10)
-        gameover_text = font.render('Game over! Space bar to restart!', True, 'red')
-        screen.blit(gameover_text, (100, 300))
-    if game_won:
-        pygame.draw.rect(screen, 'white', [50, 200, 800, 300],0, 10)
-        pygame.draw.rect(screen, 'dark gray', [70, 220, 760, 260], 0, 10)
-        gameover_text = font.render('Victory! Space bar to restart!', True, 'green')
-        screen.blit(gameover_text, (100, 300))
-
-
-def check_collisions(scor, power, power_count, eaten_ghosts):
-    num1 = (HEIGHT - 50) // 32
-    num2 = WIDTH // 30
-    if 0 < player_x < 870:
-        if level[center_y // num1][center_x // num2] == 1:
-            level[center_y // num1][center_x // num2] = 0
-            scor += 10
-        if level[center_y // num1][center_x // num2] == 2:
-            level[center_y // num1][center_x // num2] = 0
-            scor += 50
-            power = True
-            power_count = 0
-            eaten_ghosts = [False, False, False, False]
-    return scor, power, power_count, eaten_ghosts
-
-
-def draw_board():
-    num1 = ((HEIGHT - 50) // 32)
-    num2 = (WIDTH // 30)
-    for i in range(len(level)):
-        for j in range(len(level[i])):
-            if level[i][j] == 1:
-                pygame.draw.circle(screen, 'white', (j * num2 + (0.5 * num2), i * num1 + (0.5 * num1)), 4)
-            if level[i][j] == 2 and not flicker:
-                pygame.draw.circle(screen, 'white', (j * num2 + (0.5 * num2), i * num1 + (0.5 * num1)), 10)
-            if level[i][j] == 3:
-                pygame.draw.line(screen, color, (j * num2 + (0.5 * num2), i * num1),
-                                 (j * num2 + (0.5 * num2), i * num1 + num1), 3)
-            if level[i][j] == 4:
-                pygame.draw.line(screen, color, (j * num2, i * num1 + (0.5 * num1)),
-                                 (j * num2 + num2, i * num1 + (0.5 * num1)), 3)
-            if level[i][j] == 5:
-                pygame.draw.arc(screen, color, [(j * num2 - (num2 * 0.4)) - 2, (i * num1 + (0.5 * num1)), num2, num1],
-                                0, PI / 2, 3)
-            if level[i][j] == 6:
-                pygame.draw.arc(screen, color,
-                                [(j * num2 + (num2 * 0.5)), (i * num1 + (0.5 * num1)), num2, num1], PI / 2, PI, 3)
-            if level[i][j] == 7:
-                pygame.draw.arc(screen, color, [(j * num2 + (num2 * 0.5)), (i * num1 - (0.4 * num1)), num2, num1], PI,
-                                3 * PI / 2, 3)
-            if level[i][j] == 8:
-                pygame.draw.arc(screen, color,
-                                [(j * num2 - (num2 * 0.4)) - 2, (i * num1 - (0.4 * num1)), num2, num1], 3 * PI / 2,
-                                2 * PI, 3)
-            if level[i][j] == 9:
-                pygame.draw.line(screen, 'white', (j * num2, i * num1 + (0.5 * num1)),
-                                 (j * num2 + num2, i * num1 + (0.5 * num1)), 3)
-
-
-def draw_player():
-    # 0-RIGHT, 1-LEFT, 2-UP, 3-DOWN
-    if direction == 0:
-        screen.blit(player_images[counter // 5], (player_x, player_y))
-    elif direction == 1:
-        screen.blit(pygame.transform.flip(player_images[counter // 5], True, False), (player_x, player_y))
-    elif direction == 2:
-        screen.blit(pygame.transform.rotate(player_images[counter // 5], 90), (player_x, player_y))
-    elif direction == 3:
-        screen.blit(pygame.transform.rotate(player_images[counter // 5], 270), (player_x, player_y))
-
-
-def check_position(centerx, centery):
-    turns = [False, False, False, False]
-    num1 = (HEIGHT - 50) // 32
-    num2 = (WIDTH // 30)
-    num3 = 15
-    # check collisions based on center x and center y of player +/- fudge number
-    if centerx // 30 < 29:
-        if direction == 0:
-            if level[centery // num1][(centerx - num3) // num2] < 3:
-                turns[1] = True
-        if direction == 1:
-            if level[centery // num1][(centerx + num3) // num2] < 3:
-                turns[0] = True
-        if direction == 2:
-            if level[(centery + num3) // num1][centerx // num2] < 3:
-                turns[3] = True
-        if direction == 3:
-            if level[(centery - num3) // num1][centerx // num2] < 3:
-                turns[2] = True
-
-        if direction == 2 or direction == 3:
-            if 12 <= centerx % num2 <= 18:
-                if level[(centery + num3) // num1][centerx // num2] < 3:
-                    turns[3] = True
-                if level[(centery - num3) // num1][centerx // num2] < 3:
-                    turns[2] = True
-            if 12 <= centery % num1 <= 18:
-                if level[centery // num1][(centerx - num2) // num2] < 3:
-                    turns[1] = True
-                if level[centery // num1][(centerx + num2) // num2] < 3:
-                    turns[0] = True
-        if direction == 0 or direction == 1:
-            if 12 <= centerx % num2 <= 18:
-                if level[(centery + num1) // num1][centerx // num2] < 3:
-                    turns[3] = True
-                if level[(centery - num1) // num1][centerx // num2] < 3:
-                    turns[2] = True
-            if 12 <= centery % num1 <= 18:
-                if level[centery // num1][(centerx - num3) // num2] < 3:
-                    turns[1] = True
-                if level[centery // num1][(centerx + num3) // num2] < 3:
-                    turns[0] = True
-    else:
-        turns[0] = True
-        turns[1] = True
-
-    return turns
-
-
-def move_player(play_x, play_y):
-    # r, l, u, d
-    if direction == 0 and turns_allowed[0]:
-        play_x += player_speed
-    elif direction == 1 and turns_allowed[1]:
-        play_x -= player_speed
-    if direction == 2 and turns_allowed[2]:
-        play_y -= player_speed
-    elif direction == 3 and turns_allowed[3]:
-        play_y += player_speed
-    return play_x, play_y
-
+# instantiate utility class
+utility = Utility()
 
 def get_targets(blink_x, blink_y, ink_x, ink_y, pink_x, pink_y, clyd_x, clyd_y):
-    if player_x < 450:
+    if player.x < 450:
         runaway_x = 900
     else:
         runaway_x = 0
-    if player_y < 450:
+    if player.y < 450:
         runaway_y = 900
     else:
         runaway_y = 0
     return_target = (380, 400)
-    if powerup:
+    if player.is_powered_up:
         if not blinky.is_dead and not eaten_ghost[0]:
             blink_target = (runaway_x, runaway_y)
         elif not blinky.is_dead and eaten_ghost[0]:
             if 340 < blink_x < 560 and 340 < blink_y < 500:
                 blink_target = (400, 100)
             else:
-                blink_target = (player_x, player_y)
+                blink_target = (player.x, player.y)
         else:
             blink_target = return_target
         if not inky.is_dead and not eaten_ghost[1]:
-            ink_target = (runaway_x, player_y)
+            ink_target = (runaway_x, player.y)
         elif not inky.is_dead and eaten_ghost[1]:
             if 340 < ink_x < 560 and 340 < ink_y < 500:
                 ink_target = (400, 100)
             else:
-                ink_target = (player_x, player_y)
+                ink_target = (player.x, player.y)
         else:
             ink_target = return_target
         if not pinky.is_dead:
-            pink_target = (player_x, runaway_y)
+            pink_target = (player.x, runaway_y)
         elif not pinky.is_dead and eaten_ghost[2]:
             if 340 < pink_x < 560 and 340 < pink_y < 500:
                 pink_target = (400, 100)
             else:
-                pink_target = (player_x, player_y)
+                pink_target = (player.x, player.y)
         else:
             pink_target = return_target
         if not clyde.is_dead and not eaten_ghost[3]:
@@ -233,7 +90,7 @@ def get_targets(blink_x, blink_y, ink_x, ink_y, pink_x, pink_y, clyd_x, clyd_y):
             if 340 < clyd_x < 560 and 340 < clyd_y < 500:
                 clyd_target = (400, 100)
             else:
-                clyd_target = (player_x, player_y)
+                clyd_target = (player.x, player.y)
         else:
             clyd_target = return_target
     else:
@@ -241,32 +98,31 @@ def get_targets(blink_x, blink_y, ink_x, ink_y, pink_x, pink_y, clyd_x, clyd_y):
             if 340 < blink_x < 560 and 340 < blink_y < 500:
                 blink_target = (400, 100)
             else:
-                blink_target = (player_x, player_y)
+                blink_target = (player.x, player.y)
         else:
             blink_target = return_target
         if not inky.is_dead:
             if 340 < ink_x < 560 and 340 < ink_y < 500:
                 ink_target = (400, 100)
             else:
-                ink_target = (player_x, player_y)
+                ink_target = (player.x, player.y)
         else:
             ink_target = return_target
         if not pinky.is_dead:
             if 340 < pink_x < 560 and 340 < pink_y < 500:
                 pink_target = (400, 100)
             else:
-                pink_target = (player_x, player_y)
+                pink_target = (player.x, player.y)
         else:
             pink_target = return_target
         if not clyde.is_dead:
             if 340 < clyd_x < 560 and 340 < clyd_y < 500:
                 clyd_target = (400, 100)
             else:
-                clyd_target = (player_x, player_y)
+                clyd_target = (player.x, player.y)
         else:
             clyd_target = return_target
     return [blink_target, ink_target, pink_target, clyd_target]
-
 
 run = True
 while run:
@@ -278,15 +134,15 @@ while run:
     else:
         counter = 0
         flicker = True
-    if powerup and power_counter < 600:
+    if player.is_powered_up and power_counter < 600:
         power_counter += 1
         blinky.is_frightened = True
         inky.is_frightened = True
         pinky.is_frightened = True
         clyde.is_frightened = True
-    elif powerup and power_counter >= 600:
+    elif player.is_powered_up and power_counter >= 600:
         power_counter = 0
-        powerup = False
+        player.is_powered_up = False
         blinky.is_frightened = False
         inky.is_frightened = False
         pinky.is_frightened = False
@@ -299,10 +155,10 @@ while run:
         moving = True
 
     screen.fill('black')
-    draw_board()
-    center_x = player_x + 23
-    center_y = player_y + 24
-    if powerup:
+    utility.draw_board(screen, level, flicker)
+    center_x = player.x + 23
+    center_y = player.y + 24
+    if player.is_powered_up:
         ghost_speeds = [1, 1, 1, 1]
         blinky.speed = 1
         inky.speed = 1
@@ -345,17 +201,17 @@ while run:
             game_won = False
 
     player_circle = pygame.draw.circle(screen, 'black', (center_x, center_y), 20, 2)
-    draw_player()
+    player.draw_player(screen, counter)
     blinky.rect = blinky.draw(screen)
     inky.rect = inky.draw(screen)
     pinky.rect = pinky.draw(screen)
     clyde.rect = clyde.draw(screen)
-    draw_misc()
+    utility.draw_misc(screen, score, player.is_powered_up, player.lives, game_over, game_won)
     targets = get_targets(blinky.x_pos, blinky.y_pos, inky.x_pos, inky.x_pos, pinky.x_pos, pinky.y_pos, clyde.x_pos, clyde.y_pos)
 
-    turns_allowed = check_position(center_x, center_y)
+    turns_allowed = player.check_position(center_x, center_y, level)
     if moving:
-        player_x, player_y = move_player(player_x, player_y)
+        player.move_player(turns_allowed)
         if not blinky.is_dead and not blinky.is_in_box:
             blinky.x_pos, blinky.y_pos, blinky.direction = blinky.move(level, HEIGHT, WIDTH)
         else:
@@ -369,34 +225,34 @@ while run:
         else:
             inky.x_pos, inky.y_pos, inky.direction = inky.move(level, HEIGHT, WIDTH)
         clyde.x_pos, clyde.x_pos, clyde.direction = clyde.move(level, HEIGHT, WIDTH)
-    score, powerup, power_counter, eaten_ghost = check_collisions(score, powerup, power_counter, eaten_ghost)
-    # add to if not powerup to check if eaten ghosts
-    if not powerup:
+    score, player.is_powered_up, power_counter, eaten_ghost = utility.check_collisions(score, player.is_powered_up, power_counter, eaten_ghost, level, player.x, center_x, center_y)
+    # add to if not player.is_powered_up to check if eaten ghosts
+    if not player.is_powered_up:
         if (player_circle.colliderect(blinky.rect) and not blinky.is_dead) or \
                 (player_circle.colliderect(inky.rect) and not inky.is_dead) or \
                 (player_circle.colliderect(pinky.rect) and not pinky.is_dead) or \
                 (player_circle.colliderect(clyde.rect) and not clyde.is_dead):
-            if lives > 0:
-                lives -= 1
+            if player.player.lives > 0:
+                player.player.lives -= 1
                 startup_counter = 0
-                powerup = False
+                player.is_powered_up = False
                 power_counter = 0
-                player_x = 450
-                player_y = 663
-                direction = 0
+                player.x = 450
+                player.y = 663
+                player.direction = 0
                 direction_command = 0
-                blinky_x = 56
-                blinky_y = 58
-                blinky_direction = 0
-                inky_x = 440
-                inky_y = 388
-                inky_direction = 2
-                pinky_x = 440
-                pinky_y = 438
-                pinky_direction = 2
-                clyde_x = 440
-                clyde_y = 438
-                clyde_direction = 2
+                blinky.x_pos = 56
+                blinky.y_pos = 58
+                blinky.direction = 0
+                inky.x_pos = 440
+                inky.y_pos = 388
+                inky.direction = 2
+                pinky.x_pos = 440
+                pinky.y_pos = 438
+                pinky.direction = 2
+                clyde.x_pos = 440
+                clyde.y_pos = 438
+                clyde.direction = 2
                 eaten_ghost = [False, False, False, False]
                 blinky.is_dead = False
                 inky.is_dead = False
@@ -406,150 +262,150 @@ while run:
                 game_over = True
                 moving = False
                 startup_counter = 0
-    if powerup and player_circle.colliderect(blinky.rect) and eaten_ghost[0] and not blinky.is_dead:
-        if lives > 0:
-            powerup = False
+    if player.is_powered_up and player_circle.colliderect(blinky.rect) and eaten_ghost[0] and not blinky.is_dead:
+        if player.player.lives > 0:
+            player.is_powered_up = False
             power_counter = 0
-            lives -= 1
+            player.player.lives -= 1
             startup_counter = 0
-            player_x = 450
-            player_y = 663
-            direction = 0
+            player.x = 450
+            player.y = 663
+            player.direction = 0
             direction_command = 0
-            blinky_x = 56
-            blinky_y = 58
-            blinky_direction = 0
-            inky_x = 440
-            inky_y = 388
-            inky_direction = 2
-            pinky_x = 440
-            pinky_y = 438
-            pinky_direction = 2
-            clyde_x = 440
-            clyde_y = 438
-            clyde_direction = 2
+            blinky.x_pos = 56
+            blinky.y_pos = 58
+            blinky.direction = 0
+            inky.x_pos = 440
+            inky.y_pos = 388
+            inky.direction = 2
+            pinky.x_pos = 440
+            pinky.y_pos = 438
+            pinky.direction = 2
+            clyde.x_pos = 440
+            clyde.y_pos = 438
+            clyde.direction = 2
             eaten_ghost = [False, False, False, False]
-            blinky_dead = False
-            inky_dead = False
-            clyde_dead = False
-            pinky_dead = False
+            blinky.is_dead = False
+            inky.is_dead = False
+            clyde.is_dead = False
+            pinky.is_dead = False
         else:
             game_over = True
             moving = False
             startup_counter = 0
-    if powerup and player_circle.colliderect(inky.rect) and eaten_ghost[1] and not inky.is_dead:
-        if lives > 0:
-            powerup = False
+    if player.is_powered_up and player_circle.colliderect(inky.rect) and eaten_ghost[1] and not inky.is_dead:
+        if player.player.lives > 0:
+            player.is_powered_up = False
             power_counter = 0
-            lives -= 1
+            player.player.lives -= 1
             startup_counter = 0
-            player_x = 450
-            player_y = 663
-            direction = 0
+            player.x = 450
+            player.y = 663
+            player.direction = 0
             direction_command = 0
-            blinky_x = 56
-            blinky_y = 58
-            blinky_direction = 0
-            inky_x = 440
-            inky_y = 388
-            inky_direction = 2
-            pinky_x = 440
-            pinky_y = 438
-            pinky_direction = 2
-            clyde_x = 440
-            clyde_y = 438
-            clyde_direction = 2
+            blinky.x_pos = 56
+            blinky.y_pos = 58
+            blinky.direction = 0
+            inky.x_pos = 440
+            inky.y_pos = 388
+            inky.direction = 2
+            pinky.x_pos = 440
+            pinky.y_pos = 438
+            pinky.direction = 2
+            clyde.x_pos = 440
+            clyde.y_pos = 438
+            clyde.direction = 2
             eaten_ghost = [False, False, False, False]
-            blinky_dead = False
-            inky_dead = False
-            clyde_dead = False
-            pinky_dead = False
+            blinky.is_dead = False
+            inky.is_dead = False
+            clyde.is_dead = False
+            pinky.is_dead = False
         else:
             game_over = True
             moving = False
             startup_counter = 0
-    if powerup and player_circle.colliderect(pinky.rect) and eaten_ghost[2] and not pinky.is_dead:
-        if lives > 0:
-            powerup = False
+    if player.is_powered_up and player_circle.colliderect(pinky.rect) and eaten_ghost[2] and not pinky.is_dead:
+        if player.lives > 0:
+            player.is_powered_up = False
             power_counter = 0
-            lives -= 1
+            player.lives -= 1
             startup_counter = 0
-            player_x = 450
-            player_y = 663
-            direction = 0
+            player.x = 450
+            player.y = 663
+            player.direction = 0
             direction_command = 0
-            blinky_x = 56
-            blinky_y = 58
-            blinky_direction = 0
-            inky_x = 440
-            inky_y = 388
-            inky_direction = 2
-            pinky_x = 440
-            pinky_y = 438
-            pinky_direction = 2
-            clyde_x = 440
-            clyde_y = 438
-            clyde_direction = 2
+            blinky.x_pos = 56
+            blinky.y_pos = 58
+            blinky.direction = 0
+            inky.x_pos = 440
+            inky.y_pos = 388
+            inky.direction = 2
+            pinky.x_pos = 440
+            pinky.y_pos = 438
+            pinky.direction = 2
+            clyde.x_pos = 440
+            clyde.y_pos = 438
+            clyde.direction = 2
             eaten_ghost = [False, False, False, False]
-            blinky_dead = False
-            inky_dead = False
-            clyde_dead = False
-            pinky_dead = False
+            blinky.is_dead = False
+            inky.is_dead = False
+            clyde.is_dead = False
+            pinky.is_dead = False
         else:
             game_over = True
             moving = False
             startup_counter = 0
-    if powerup and player_circle.colliderect(clyde.rect) and eaten_ghost[3] and not clyde.is_dead:
-        if lives > 0:
-            powerup = False
+    if player.is_powered_up and player_circle.colliderect(clyde.rect) and eaten_ghost[3] and not clyde.is_dead:
+        if player.lives > 0:
+            player.is_powered_up = False
             power_counter = 0
-            lives -= 1
+            player.lives -= 1
             startup_counter = 0
-            player_x = 450
-            player_y = 663
-            direction = 0
+            player.x = 450
+            player.y = 663
+            player.direction = 0
             direction_command = 0
-            blinky_x = 56
-            blinky_y = 58
-            blinky_direction = 0
-            inky_x = 440
-            inky_y = 388
-            inky_direction = 2
-            pinky_x = 440
-            pinky_y = 438
-            pinky_direction = 2
-            clyde_x = 440
-            clyde_y = 438
-            clyde_direction = 2
+            blinky.x_pos = 56
+            blinky.y_pos = 58
+            blinky.direction = 0
+            inky.x_pos = 440
+            inky.y_pos = 388
+            inky.direction = 2
+            pinky.x_pos = 440
+            pinky.y_pos = 438
+            pinky.direction = 2
+            clyde.x_pos = 440
+            clyde.y_pos = 438
+            clyde.direction = 2
             eaten_ghost = [False, False, False, False]
-            blinky_dead = False
-            inky_dead = False
-            clyde_dead = False
-            pinky_dead = False
+            blinky.is_dead = False
+            inky.is_dead = False
+            clyde.is_dead = False
+            pinky.is_dead = False
         else:
             game_over = True
             moving = False
             startup_counter = 0
-    if powerup and player_circle.colliderect(blinky.rect) and not blinky.is_dead and not eaten_ghost[0]:
-        blinky_dead = True
+    if player.is_powered_up and player_circle.colliderect(blinky.rect) and not blinky.is_dead and not eaten_ghost[0]:
+        blinky.is_dead = True
         eaten_ghost[0] = True
         blinky.is_dead = True
         blinky.is_eaten = True
         score += (2 ** eaten_ghost.count(True)) * 100
-    if powerup and player_circle.colliderect(inky.rect) and not inky.is_dead and not eaten_ghost[1]:
-        inky_dead = True
+    if player.is_powered_up and player_circle.colliderect(inky.rect) and not inky.is_dead and not eaten_ghost[1]:
+        inky.is_dead = True
         eaten_ghost[1] = True
         inky.is_dead = True
         inky.is_eaten = True
         score += (2 ** eaten_ghost.count(True)) * 100
-    if powerup and player_circle.colliderect(pinky.rect) and not pinky.is_dead and not eaten_ghost[2]:
-        pinky_dead = True
+    if player.is_powered_up and player_circle.colliderect(pinky.rect) and not pinky.is_dead and not eaten_ghost[2]:
+        pinky.is_dead = True
         eaten_ghost[2] = True
         pinky.is_dead = True
         pinky.is_eaten = True
         score += (2 ** eaten_ghost.count(True)) * 100
-    if powerup and player_circle.colliderect(clyde.rect) and not clyde.is_dead and not eaten_ghost[3]:
-        clyde_dead = True
+    if player.is_powered_up and player_circle.colliderect(clyde.rect) and not clyde.is_dead and not eaten_ghost[3]:
+        clyde.is_dead = True
         eaten_ghost[3] = True
         clyde.is_dead = True
         clyde.is_eaten = True
@@ -568,60 +424,60 @@ while run:
             if event.key == pygame.K_DOWN:
                 direction_command = 3
             if event.key == pygame.K_SPACE and (game_over or game_won):
-                powerup = False
+                player.is_powered_up = False
                 power_counter = 0
-                lives -= 1
+                player.lives -= 1
                 startup_counter = 0
-                player_x = 450
-                player_y = 663
+                player.x = 450
+                player.y = 663
                 direction = 0
                 direction_command = 0
-                blinky_x = 56
-                blinky_y = 58
-                blinky_direction = 0
-                inky_x = 440
-                inky_y = 388
-                inky_direction = 2
-                pinky_x = 440
-                pinky_y = 438
-                pinky_direction = 2
-                clyde_x = 440
-                clyde_y = 438
-                clyde_direction = 2
+                blinky.x_pos = 56
+                blinky.y_pos = 58
+                blinky.direction = 0
+                inky.x_pos = 440
+                inky.y_pos = 388
+                inky.direction = 2
+                pinky.x_pos = 440
+                pinky.y_pos = 438
+                pinky.direction = 2
+                clyde.x_pos = 440
+                clyde.y_pos = 438
+                clyde.direction = 2
                 eaten_ghost = [False, False, False, False]
-                blinky_dead = False
-                inky_dead = False
-                clyde_dead = False
-                pinky_dead = False
+                blinky.is_dead = False
+                inky.is_dead = False
+                clyde.is_dead = False
+                pinky.is_dead = False
                 score = 0
-                lives = 3
+                player.lives = 3
                 level = copy.deepcopy(boards)
                 game_over = False
                 game_won = False
 
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_RIGHT and direction_command == 0:
-                direction_command = direction
+                direction_command = player.direction
             if event.key == pygame.K_LEFT and direction_command == 1:
-                direction_command = direction
+                direction_command = player.direction
             if event.key == pygame.K_UP and direction_command == 2:
-                direction_command = direction
+                direction_command = player.direction
             if event.key == pygame.K_DOWN and direction_command == 3:
-                direction_command = direction
+                direction_command = player.direction
 
     if direction_command == 0 and turns_allowed[0]:
-        direction = 0
+        player.direction = 0
     if direction_command == 1 and turns_allowed[1]:
-        direction = 1
+        player.direction = 1
     if direction_command == 2 and turns_allowed[2]:
-        direction = 2
+        player.direction = 2
     if direction_command == 3 and turns_allowed[3]:
-        direction = 3
+        player.direction = 3
 
-    if player_x > 900:
-        player_x = -47
-    elif player_x < -50:
-        player_x = 897
+    if player.x > 900:
+        player.x = -47
+    elif player.x < -50:
+        player.x = 897
 
     if blinky.is_in_box and blinky.is_dead:
         blinky.is_dead = False
