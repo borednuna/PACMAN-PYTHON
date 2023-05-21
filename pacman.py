@@ -232,8 +232,8 @@ while run:
                 (player_circle.colliderect(inky.rect) and not inky.is_dead) or \
                 (player_circle.colliderect(pinky.rect) and not pinky.is_dead) or \
                 (player_circle.colliderect(clyde.rect) and not clyde.is_dead):
-            if player.player.lives > 0:
-                player.player.lives -= 1
+            if player.lives > 0:
+                player.lives -= 1
                 startup_counter = 0
                 player.is_powered_up = False
                 power_counter = 0
@@ -263,10 +263,10 @@ while run:
                 moving = False
                 startup_counter = 0
     if player.is_powered_up and player_circle.colliderect(blinky.rect) and eaten_ghost[0] and not blinky.is_dead:
-        if player.player.lives > 0:
+        if player.lives > 0:
             player.is_powered_up = False
             power_counter = 0
-            player.player.lives -= 1
+            player.lives -= 1
             startup_counter = 0
             player.x = 450
             player.y = 663
@@ -294,10 +294,10 @@ while run:
             moving = False
             startup_counter = 0
     if player.is_powered_up and player_circle.colliderect(inky.rect) and eaten_ghost[1] and not inky.is_dead:
-        if player.player.lives > 0:
+        if player.lives > 0:
             player.is_powered_up = False
             power_counter = 0
-            player.player.lives -= 1
+            player.lives -= 1
             startup_counter = 0
             player.x = 450
             player.y = 663
