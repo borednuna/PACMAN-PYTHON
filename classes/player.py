@@ -4,10 +4,10 @@ WIDTH = 900
 HEIGHT = 950
 
 class Player:
-    def __init__(self):
+    def __init__(self, speed_modifier):
         self.x = 450
         self.y = 663
-        self.speed = 2
+        self.speed = (int)(2 + (speed_modifier * 0.5))
         self.direction = 0
         self.is_powered_up = False
         self.lives = 3

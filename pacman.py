@@ -46,84 +46,6 @@ clyde = Clyde((player.x, player.y), 3)
 # instantiate utility class
 utility = Utility()
 
-def get_targets(blink_x, blink_y, ink_x, ink_y, pink_x, pink_y, clyd_x, clyd_y):
-    if player.x < 450:
-        runaway_x = 900
-    else:
-        runaway_x = 0
-    if player.y < 450:
-        runaway_y = 900
-    else:
-        runaway_y = 0
-    return_target = (380, 400)
-    if player.is_powered_up:
-        if not blinky.is_dead and not eaten_ghost[0]:
-            blink_target = (runaway_x, runaway_y)
-        elif not blinky.is_dead and eaten_ghost[0]:
-            if 340 < blink_x < 560 and 340 < blink_y < 500:
-                blink_target = (400, 100)
-            else:
-                blink_target = (player.x, player.y)
-        else:
-            blink_target = return_target
-        if not inky.is_dead and not eaten_ghost[1]:
-            ink_target = (runaway_x, player.y)
-        elif not inky.is_dead and eaten_ghost[1]:
-            if 340 < ink_x < 560 and 340 < ink_y < 500:
-                ink_target = (400, 100)
-            else:
-                ink_target = (player.x, player.y)
-        else:
-            ink_target = return_target
-        if not pinky.is_dead:
-            pink_target = (player.x, runaway_y)
-        elif not pinky.is_dead and eaten_ghost[2]:
-            if 340 < pink_x < 560 and 340 < pink_y < 500:
-                pink_target = (400, 100)
-            else:
-                pink_target = (player.x, player.y)
-        else:
-            pink_target = return_target
-        if not clyde.is_dead and not eaten_ghost[3]:
-            clyd_target = (450, 450)
-        elif not clyde.is_dead and eaten_ghost[3]:
-            if 340 < clyd_x < 560 and 340 < clyd_y < 500:
-                clyd_target = (400, 100)
-            else:
-                clyd_target = (player.x, player.y)
-        else:
-            clyd_target = return_target
-    else:
-        if not blinky.is_dead:
-            if 340 < blink_x < 560 and 340 < blink_y < 500:
-                blink_target = (400, 100)
-            else:
-                blink_target = (player.x, player.y)
-        else:
-            blink_target = return_target
-        if not inky.is_dead:
-            if 340 < ink_x < 560 and 340 < ink_y < 500:
-                ink_target = (400, 100)
-            else:
-                ink_target = (player.x, player.y)
-        else:
-            ink_target = return_target
-        if not pinky.is_dead:
-            if 340 < pink_x < 560 and 340 < pink_y < 500:
-                pink_target = (400, 100)
-            else:
-                pink_target = (player.x, player.y)
-        else:
-            pink_target = return_target
-        if not clyde.is_dead:
-            if 340 < clyd_x < 560 and 340 < clyd_y < 500:
-                clyd_target = (400, 100)
-            else:
-                clyd_target = (player.x, player.y)
-        else:
-            clyd_target = return_target
-    return [blink_target, ink_target, pink_target, clyd_target]
-
 run = True
 while run:
     timer.tick(fps)
@@ -207,7 +129,7 @@ while run:
     pinky.rect = pinky.draw(screen)
     clyde.rect = clyde.draw(screen)
     utility.draw_misc(screen, score, player.is_powered_up, player.lives, game_over, game_won)
-    targets = get_targets(blinky.x_pos, blinky.y_pos, inky.x_pos, inky.x_pos, pinky.x_pos, pinky.y_pos, clyde.x_pos, clyde.y_pos)
+    targets = utility.get_targets(blinky, inky, pinky, clyde, player, eaten_ghost)
 
     turns_allowed = player.check_position(center_x, center_y, level)
     if moving:
