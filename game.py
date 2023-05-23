@@ -109,6 +109,7 @@ class Levels:
 
         if self.direction_command == 0 and self.turns_allowed[0]:
             self.player.direction = 0
+            
         if self.direction_command == 1 and self.turns_allowed[1]:
             self.player.direction = 1
         if self.direction_command == 2 and self.turns_allowed[2]:
@@ -204,6 +205,10 @@ class Levels:
                 self.game_won = False
 
         self.targets = self.utility.get_targets(self.blinky, self.inky, self.pinky, self.clyde, self.player, self.eaten_ghost)
+        self.blinky.target = self.targets[0]
+        self.inky.target = self.targets[1]
+        self.pinky.target = self.targets[2]
+        self.clyde.target = self.targets[3]
         self.turns_allowed = self.player.check_position(self.center_x, self.center_y, self.level)
 
         if self.moving:
@@ -246,8 +251,8 @@ class Levels:
                     self.pinky.x_pos = 440
                     self.pinky.y_pos = 438
                     self.pinky.direction = 2
-                    self.clyde.x_pos = 440
-                    self.clyde.y_pos = 438
+                    self.clyde.x_pos = 56
+                    self.clyde.y_pos = 58
                     self.clyde.direction = 2
                     self.eaten_ghost = [False, False, False, False]
                     self.blinky.is_dead = False
