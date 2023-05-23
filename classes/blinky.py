@@ -9,9 +9,9 @@ class Blinky(Ghost):
     dead_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/dead.png'), (45, 45))
 
     # constructor
-    def __init__(self, target, id):
-        super().__init__(56, 58, target, 0, id)
-        rect = pygame.rect.Rect(0, 0, 0, 0)
+    def __init__(self, target, id, speed_modifier):
+        super().__init__(56, 58, target, 0, id, speed_modifier)
+        self.rect = pygame.rect.Rect(0, 0, 0, 0)
 
     # draw ghost
     def draw(self, screen):
