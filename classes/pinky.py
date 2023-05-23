@@ -1,5 +1,7 @@
 import pygame
+import math
 from classes.ghost import Ghost
+
 
 # Inherit Pinky from Ghost
 class Pinky(Ghost):
@@ -99,9 +101,57 @@ class Pinky(Ghost):
         return self.turns, self.is_in_box
     
     # move ghost
+    # def move(self, level, HEIGHT, WIDTH):
+    #     # r, l, u, d
+    #     # inky is going to turn left or right whenever advantageous, but only up or down on collision
+    #     self.turns, self.is_in_box = self.check_collisions(level, HEIGHT, WIDTH)
+        
+    #     # using phythagorean theorem to find distance between pacman and ghost
+    #     minDistance = 1000000
+    #     newpos = (0, 0)
+    #     fixdir = (0, 0)
+    #     newcenter = (0, 0)
+    #     fixcenter = (0, 0)
+    #     for i in range(len(self.turns)):
+    #         if self.turns[i]:
+    #             if i == 0:
+    #                 newpos = (self.x_pos + self.speed, self.y_pos)
+    #                 newcenter = (self.center_x + self.speed, self.center_y)
+    #             elif i == 1:
+    #                 newpos = (self.x_pos - self.speed, self.y_pos)
+    #                 newcenter = (self.center_x - self.speed, self.center_y)
+    #             elif i == 2:
+    #                 newpos = (self.x_pos, self.y_pos - self.speed)
+    #                 newcenter = (self.center_x, self.center_y - self.speed)
+    #             elif i == 3:
+    #                 newpos = (self.x_pos, self.y_pos + self.speed)
+    #                 newcenter = (self.center_x, self.center_y + self.speed)
+    #             distance = math.sqrt((newpos[0] - self.target[0]) ** 2 + (newpos[1] - self.target[1]) ** 2)
+    #             if distance < minDistance:
+    #                 minDistance = distance
+    #                 self.direction = i
+    #                 fixdir = newpos
+    #                 fixcenter = newcenter
+
+    #     print(minDistance)
+    #     self.x_pos = fixdir[0]
+    #     self.y_pos = fixdir[1]
+
+    #     self.center_x = fixcenter[0]
+    #     self.center_y = fixcenter[1]
+
+    #     if self.x_pos < -30:
+    #         self.x_pos = 900
+    #         self.center_x = 922
+    #     elif self.x_pos > 900:
+    #         self.x_pos -= 30
+
+    #     return self.x_pos, self.y_pos, self.direction
+
+    # move ghost
     def move(self, level, HEIGHT, WIDTH):
         # r, l, u, d
-        # inky is going to turn left or right whenever advantageous, but only up or down on collision
+        # inky turns up or down at any point to pursue, but left and right only on collision
         self.turns, self.is_in_box = self.check_collisions(level, HEIGHT, WIDTH)
         if self.direction == 0:
             if self.target[0] > self.x_pos and self.turns[0]:
