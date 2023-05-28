@@ -92,23 +92,7 @@ class Pinky(Ghost):
                             self.is_in_box or self.is_dead)):
                         self.turns[0] = True
 
-            # current_x = (self.center_x) // num2
-            # current_y = (self.center_y) // num1
-
-            # if level[(self.center_y - num3) // num1][current_x] < 3 or level[(self.center_y - num3) // num1][current_x] == 9:
-            #     self.turns[2] = True
-            # if level[(self.center_y + num3) // num1][current_x] < 3 or level[(self.center_y + num3) // num1][current_x] == 9:
-            #     self.turns[3] = True
-            #     if(level[(self.center_y + num3) // num1][current_x] == 9):
-            #         self.turns[3] = False
-            # if level[current_y][(self.center_x - num3) // num1] < 3 or level[current_y][(self.center_x - num3) // num1] == 9:
-            #     self.turns[1] = True
-            # if level[current_y][(self.center_x + num3) // num1] < 3 or level[current_y][(self.center_x + num3) // num1] == 9:
-            #     self.turns[0] = True
-
-            # print(current_x, current_y, self.turns, self.is_in_box, self.is_dead)
-
-        else: # kayaknya buat passage:v
+        else:
             self.turns[0] = True
             self.turns[1] = True
         if 350 < self.x_pos < 550 and 330 < self.y_pos < 480: # cek box
@@ -127,12 +111,6 @@ class Pinky(Ghost):
         fixcenter = (self.center_x, self.center_y)
 
         for i in range(len(self.turns)):
-            # if self.is_in_box:
-            #     self.target = (420, 328)
-            
-            # if self.is_dead:
-            #     self.target = (14 * 30, 11 * 32)
-
             if self.turns[i]:
                 if i == 0:
                     newpos = (self.x_pos + self.speed, self.y_pos)

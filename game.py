@@ -214,9 +214,9 @@ class Levels:
         if self.moving:
             self.player.move_player(self.turns_allowed)
             if not self.blinky.is_dead and not self.blinky.is_in_box:
-                self.blinky.x_pos, self.blinky.y_pos, self.blinky.direction = self.blinky.move(self.level, HEIGHT, WIDTH)
+                self.blinky.x_pos, self.blinky.y_pos, self.blinky.direction = self.blinky.move_gbfs(self.level, HEIGHT, WIDTH)
             else:
-                self.blinky.x_pos, self.blinky.y_pos, self.blinky.direction = self.blinky.move(self.level, HEIGHT, WIDTH)
+                self.blinky.x_pos, self.blinky.y_pos, self.blinky.direction = self.blinky.move_astar(self.level, HEIGHT, WIDTH)
             if not self.pinky.is_dead and not self.pinky.is_in_box:
                 self.pinky.x_pos, self.pinky.y_pos, self.pinky.direction = self.pinky.move(self.level, HEIGHT, WIDTH)
             else:
